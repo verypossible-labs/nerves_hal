@@ -6,7 +6,7 @@ defmodule Nerves.HAL.Device do
 
   def load([_ | devscope] = scope, subsystem) do
     devpath =
-        Path.join([@sysfs, "/", Enum.join(devscope, "/")])
+        Path.join([@sysfs] ++ devscope)
 
     %__MODULE__{
       scope: scope,
