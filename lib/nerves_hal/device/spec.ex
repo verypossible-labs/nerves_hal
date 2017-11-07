@@ -5,6 +5,10 @@ defmodule Nerves.HAL.Device.Spec do
 
   @callback handle_connect(device :: Device.t(), state :: term) :: {:noreply, new_state :: term}
 
+  @callback handle_data_in(device :: Device.t(), data :: term, state :: term) ::
+              {:noreply, state :: term}
+              | {:disconnect, state :: term}
+
   @callback handle_discover(device :: Device.t(), state :: term) ::
               {:connect, new_state :: term}
               | {:noreply, new_state :: term}
@@ -30,7 +34,6 @@ defmodule Nerves.HAL.Device.Spec do
 
     quote location: :keep do
       @behaviour Nerves.HAL.Device.Spec
-      @behaviour Nerves.HAL.Device.Adapter.Connection
 
       @adapter unquote(adapter)
       @adapter_opts unquote(opts)
