@@ -40,7 +40,7 @@ defmodule Nerves.HAL.Device do
         {:ok, uevent} ->
           uevent_info =
             uevent
-            |> String.strip
+            |> String.trim
             |> String.split("\n")
             |> parse_uevent(%{})
           Path.join("/dev", Map.get(uevent_info, :devname, ""))

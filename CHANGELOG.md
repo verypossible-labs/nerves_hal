@@ -1,5 +1,9 @@
 # Release Notes
 
+## v0.4.3
+* Bug Fixes
+  * Use String.trim/1 instead of String.strip/1
+
 ## v0.4.2
 * Bug Fixes
   * Fix issue with devpath not being created properly
