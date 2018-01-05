@@ -121,7 +121,8 @@ defmodule Nerves.HAL.Device.Spec do
     s =
       case s.mod.handle_disconnect(device, s.handler_state) do
         {:noreply, handler_state} ->
-          put_in(s, [:handler_state], handler_state)
+          s = put_in(s, [:handler_state], handler_state)
+          disconnect_device(device, s)
       end
     {:noreply, [], s}
   end
@@ -181,7 +182,7 @@ defmodule Nerves.HAL.Device.Spec do
   def connect_device(device, %{adapter: {{mod, opts}, nil}} = s) do
     {:ok, pid} = mod.start_link(opts)
     :ok = mod.connect(pid, device)
-    handler_state = Map.put_new(s.handler_state, :adapter, pid)
+    handler_state = Map.put(s.handler_state, :adapter, pid)
     s =
       case s.mod.handle_connect(device, handler_state) do
         {:noreply, new_handler_state} ->
