@@ -1,5 +1,9 @@
 # Release Notes
 
+## v0.4.4
+* Bug Fixes
+  *Fixes issue with devices disconnecting and reconecting improperly.
+
 ## v0.4.3
 * Bug Fixes
   * Use String.trim/1 instead of String.strip/1
