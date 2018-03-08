@@ -3,25 +3,23 @@ defmodule Nerves.HAL.Device.Spec do
 
   require Logger
 
-  @callback handle_connect(device :: Device.t, state :: term) ::
-    {:noreply, new_state :: term}
+  @callback handle_connect(device :: Device.t(), state :: term) :: {:noreply, new_state :: term}
 
-  @callback handle_discover(device :: Device.t, state :: term) ::
-    {:connect, new_state :: term} |
-    {:noreply, new_state :: term}
+  @callback handle_discover(device :: Device.t(), state :: term) ::
+              {:connect, new_state :: term}
+              | {:noreply, new_state :: term}
 
-  @callback handle_disconnect(device :: Device.t, state :: term) ::
-    {:noreply, new_state :: term}
+  @callback handle_disconnect(device :: Device.t(), state :: term) ::
+              {:noreply, new_state :: term}
 
-  @callback handle_call(call :: term, GenServer.from, state :: term) ::
-    {:noreply, new_state :: term} |
-    {:reply, reply :: term, new_state :: term}
+  @callback handle_call(call :: term, GenServer.from(), state :: term) ::
+              {:noreply, new_state :: term}
+              | {:reply, reply :: term, new_state :: term}
 
-  @callback handle_cast(cast :: term, state :: term) ::
-    {:noreply, new_state :: term}
+  @callback handle_cast(cast :: term, state :: term) :: {:noreply, new_state :: term}
 
-  @callback terminate(reason, state :: term) ::
-    term when reason: :normal | :shutdown | {:shutdown, term} | term
+  @callback terminate(reason, state :: term) :: term
+            when reason: :normal | :shutdown | {:shutdown, term} | term
 
   defmacro __using__(opts) do
     {adapter, opts} =
@@ -58,12 +56,12 @@ defmodule Nerves.HAL.Device.Spec do
         :ok
       end
 
-      defoverridable [start_link: 0, handle_call: 3, handle_cast: 2]
+      defoverridable start_link: 0, handle_call: 3, handle_cast: 2, terminate: 2
     end
   end
 
   def start_link(mod, state, opts \\ []) do
-    IO.puts "opts: #{inspect opts}"
+    IO.puts("opts: #{inspect(opts)}")
     {:ok, pid} = GenStage.start_link(__MODULE__, {mod, state}, opts)
     GenStage.sync_subscribe(pid, to: Nerves.HAL.Device.Tree)
     {:ok, pid}
@@ -78,9 +76,9 @@ defmodule Nerves.HAL.Device.Spec do
   end
 
   def init({mod, state}) do
-
     Process.flag(:trap_exit, true)
     {adapter, opts} = mod.__adapter__()
+
     s = %{
       status: :disconnected,
       handler_state: state,
@@ -91,39 +89,52 @@ defmodule Nerves.HAL.Device.Spec do
     }
 
     {:ok, devices} = Nerves.HAL.Device.Tree.register_handler(mod)
+
     s =
       if devices != [] do
-        Enum.reduce(devices, s, fn (device, acc) ->
+        Enum.reduce(devices, s, fn device, acc ->
           {:noreply, [], s} = handle_events([{s.subsystem, :add, device}], self(), acc)
           s
         end)
       else
         s
       end
+
     {:consumer, s}
   end
 
   # handler is ready to discover devices
-  def handle_events([{subsystem, :add, device}], _from, %{subsystem: subsystem, status: :disconnected} = s) do
+  def handle_events(
+        [{subsystem, :add, device}],
+        _from,
+        %{subsystem: subsystem, status: :disconnected} = s
+      ) do
     s =
       case s.mod.handle_discover(device, s.handler_state) do
         {:noreply, handler_state} ->
           put_in(s, [:handler_state], handler_state)
+
         {:connect, device, handler_state} ->
           s = put_in(s, [:handler_state], handler_state)
           connect_device(device, s)
       end
+
     {:noreply, [], s}
   end
 
   # The connected device has disconnected
-  def handle_events([{subsystem, :remove, device}], _from, %{subsystem: subsystem, status: :connected, device: device} = s) do
+  def handle_events(
+        [{subsystem, :remove, device}],
+        _from,
+        %{subsystem: subsystem, status: :connected, device: device} = s
+      ) do
     s =
       case s.mod.handle_disconnect(device, s.handler_state) do
         {:noreply, handler_state} ->
           s = put_in(s, [:handler_state], handler_state)
           disconnect_device(device, s)
       end
+
     {:noreply, [], s}
   end
 
@@ -135,6 +146,7 @@ defmodule Nerves.HAL.Device.Spec do
     case s.mod.handle_call(request, from, s.handler_state) do
       {:noreply, handler_state} ->
         {:noreply, [], put_in(s, [:handler_state], handler_state)}
+
       {:reply, reply, handler_state} ->
         {:reply, reply, [], put_in(s, [:handler_state], handler_state)}
     end
@@ -153,6 +165,7 @@ defmodule Nerves.HAL.Device.Spec do
         {:noreply, handler_state} ->
           put_in(s, [:handler_state], handler_state)
       end
+
     {:noreply, [], s}
   end
 
@@ -163,11 +176,14 @@ defmodule Nerves.HAL.Device.Spec do
         {:noreply, handler_state} ->
           put_in(s, [:handler_state], handler_state)
       end
+
     {:noreply, [], disconnect_device(s.device, s)}
   end
+
   def handle_info({:EXIT, pid, _reason}, %{adapter: {_mod, pid}} = s) do
     {:noreply, [], disconnect_device(s.device, s)}
   end
+
   def handle_info({:EXIT, _from, :normal}, s) do
     {:noreply, [], s}
   end
@@ -183,11 +199,13 @@ defmodule Nerves.HAL.Device.Spec do
     {:ok, pid} = mod.start_link(opts)
     :ok = mod.connect(pid, device)
     handler_state = Map.put(s.handler_state, :adapter, pid)
+
     s =
       case s.mod.handle_connect(device, handler_state) do
         {:noreply, new_handler_state} ->
           put_in(s, [:handler_state], new_handler_state)
       end
+
     %{s | status: :connected, device: device, adapter: {{mod, opts}, pid}}
   end
 

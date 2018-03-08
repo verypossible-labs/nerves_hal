@@ -1,4 +1,8 @@
-%{"elixir_make": {:hex, :elixir_make, "0.4.0", "992f38fabe705bb45821a728f20914c554b276838433349d4f2341f7a687cddf", [:mix], [], "hexpm"},
-  "gen_stage": {:hex, :gen_stage, "0.12.2", "e0e347cbb1ceb5f4e68a526aec4d64b54ad721f0a8b30aa9d28e0ad749419cbb", [:mix], [], "hexpm"},
+%{
+  "earmark": {:hex, :earmark, "1.2.4", "99b637c62a4d65a20a9fb674b8cffb8baa771c04605a80c911c4418c69b75439", [:mix], [], "hexpm"},
+  "elixir_make": {:hex, :elixir_make, "0.4.0", "992f38fabe705bb45821a728f20914c554b276838433349d4f2341f7a687cddf", [:mix], [], "hexpm"},
+  "ex_doc": {:hex, :ex_doc, "0.18.3", "f4b0e4a2ec6f333dccf761838a4b253d75e11f714b85ae271c9ae361367897b7", [:mix], [{:earmark, "~> 1.1", [hex: :earmark, repo: "hexpm", optional: false]}], "hexpm"},
+  "gen_stage": {:hex, :gen_stage, "0.13.1", "edff5bca9cab22c5d03a834062515e6a1aeeb7665fb44eddae086252e39c4378", [:mix], [], "hexpm"},
   "nerves_runtime": {:hex, :nerves_runtime, "0.4.3", "e99a0744a29d8a2a9821d2489a7b9d072a29669df320e6addfdd2e54a96820d3", [:make, :mix], [{:elixir_make, "~> 0.4", [hex: :elixir_make, repo: "hexpm", optional: false]}, {:system_registry, "~> 0.5", [hex: :system_registry, repo: "hexpm", optional: false]}], "hexpm"},
-  "system_registry": {:hex, :system_registry, "0.5.0", "f0b769e699cc072f036d3b1c4fd8ab0ec5ad3aa0bb02919ebad80cf92641bbfd", [:mix], [], "hexpm"}}
+  "system_registry": {:hex, :system_registry, "0.7.0", "cd3aaf2c15392fa60f93869dde49f536fcf60e54f3b15db737e7d4ebcac108f4", [:mix], [], "hexpm"},
+}

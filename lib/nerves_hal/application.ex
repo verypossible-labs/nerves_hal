@@ -7,7 +7,7 @@ defmodule Nerves.HAL.Application do
     import Supervisor.Spec, warn: false
 
     children = [
-      worker(Nerves.HAL.Device.Tree, []),
+      worker(Nerves.HAL.Device.Tree, [])
     ]
 
     opts = [strategy: :one_for_one, name: NervesHAL.Supervisor]

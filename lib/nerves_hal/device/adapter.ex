@@ -1,7 +1,10 @@
 defmodule Nerves.HAL.Device.Adapter do
   alias Nerves.HAL.Device
 
-  @callback attributes(Device.t) :: map
+  @callback attributes(Device.t()) :: map
+
+  @callback handle_connect(Device.t(), state :: term) ::
+              {:ok, new_state :: term} | {:error, reason :: term, new_state :: term}
 
   defmacro __using__(opts) do
     quote do
@@ -25,7 +28,11 @@ defmodule Nerves.HAL.Device.Adapter do
         GenServer.call(pid, {:connect, device})
       end
 
-      defoverridable [attributes: 1]
+      def init(args) do
+        {:ok, args}
+      end
+
+      defoverridable attributes: 1
     end
   end
 
@@ -42,11 +49,12 @@ defmodule Nerves.HAL.Device.Adapter do
   end
 
   def init({mod, handler, adapter_opts}) do
-    {:ok, %{
-      handler: handler,
-      adapter_state: %{opts: adapter_opts},
-      mod: mod
-    }}
+    {:ok,
+     %{
+       handler: handler,
+       adapter_state: %{opts: adapter_opts},
+       mod: mod
+     }}
   end
 
   def handle_info(data, s) do
@@ -56,6 +64,7 @@ defmodule Nerves.HAL.Device.Adapter do
           send(s.handler, {:adapter, :data_in, data})
           put_in(s, [:adapter_state], adapter_state)
       end
+
     {:noreply, s}
   end
 
@@ -64,6 +73,7 @@ defmodule Nerves.HAL.Device.Adapter do
       {:ok, adapter_state} ->
         s = put_in(s, [:adapter_state], adapter_state)
         {:reply, :ok, s}
+
       {:error, error, s} ->
         {:reply, {:error, error}, s}
     end
@@ -73,6 +83,7 @@ defmodule Nerves.HAL.Device.Adapter do
     case s.mod.handle_call(request, from, s.adapter_state) do
       {:noreply, adapter_state} ->
         {:noreply, put_in(s, [:adapter_state], adapter_state)}
+
       {:reply, reply, adapter_state} ->
         {:reply, reply, put_in(s, [:adapter_state], adapter_state)}
     end

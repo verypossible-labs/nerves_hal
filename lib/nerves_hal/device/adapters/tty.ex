@@ -1,16 +1,15 @@
 if Code.ensure_loaded?(Nerves.UART) do
   defmodule Nerves.HAL.Device.Adapters.Tty do
-    use Nerves.HAL.Device.Adapter,
-      subsystem: "tty"
+    use Nerves.HAL.Device.Adapter, subsystem: "tty"
 
     require Logger
 
     def attributes(device) do
-      <<"/dev/", device_file :: binary>> = Nerves.HAL.Device.device_file(device)
+      <<"/dev/", device_file::binary>> = Nerves.HAL.Device.device_file(device)
 
       info =
-        Nerves.UART.enumerate
-        |> Enum.find(fn ({dev_file, _}) -> dev_file == device_file end)
+        Nerves.UART.enumerate()
+        |> Enum.find(fn {dev_file, _} -> dev_file == device_file end)
 
       case info do
         {_, attributes} -> attributes
@@ -20,12 +19,14 @@ if Code.ensure_loaded?(Nerves.UART) do
 
     def handle_connect(device, s) do
       case Nerves.HAL.Device.device_file(device) do
-        <<"/dev/", devfile :: binary>> ->
+        <<"/dev/", devfile::binary>> ->
           {:ok, pid} = Nerves.UART.start_link()
           Nerves.UART.configure(pid, s.opts)
           Nerves.UART.open(pid, devfile, s.opts)
           {:ok, Map.put(s, :driver, pid)}
-        _ -> {:error, "no dev file found", s}
+
+        _ ->
+          {:error, "no dev file found", s}
       end
     end
 
