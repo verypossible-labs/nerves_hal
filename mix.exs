@@ -25,7 +25,8 @@ defmodule Nerves.HAL.Mixfile do
     [
       {:system_registry, "~> 0.7"},
       {:gen_stage, "~> 0.13"},
-      {:ex_doc, "~> 0.18", only: :dev}
+      {:ex_doc, "~> 0.18", only: :dev},
+      {:circuits_uart, "~> 1.3", optional: true}
     ]
   end
 
