@@ -1,5 +1,10 @@
 # Release Notes
 
+## v0.6.0
+
+* Enhancements
+  * Changed from `nerves_uart` to `circuits_uart`
+
 ## v0.5.0
 
 * Enhancements
